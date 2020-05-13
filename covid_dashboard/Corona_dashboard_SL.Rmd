@@ -10,15 +10,18 @@ vertical_layout: fill
 ---
 
 ```{r setup, include=FALSE}
-library(flexdashboard)
 
-#install.packages("devtools")
+#update dashboard with the latest data, have to manually update the data by reinstalling the coronavirus
+#R asks you whether you would like to update other packages, type 3 for “None”.
+##install.packages("devtools")
 #devtools::install_github("RamiKrispin/coronavirus", force = TRUE)
+#update_datasets()
+
+
+library(flexdashboard)
 library(coronavirus)
 library(tidyr)
 data(coronavirus)
-#update_datasets()
-
 
 `%>%` <- magrittr::`%>%`
 
@@ -91,7 +94,12 @@ valueBox(
 ```{r}
 
 valueBox(
-  value = paste(format(sum(df$recovered), big.mark = ","), "", sep = " "),
+  #value = paste(format(sum(df$recovered), big.mark = ","), "", sep = " "),
+  value = paste(format(sum(df$recovered, na.rm = TRUE), big.mark = ","), " (",
+                round(100 * sum(df$recovered, na.rm = TRUE) / sum(df$confirmed), 2),
+                "%)",
+                sep = ""
+  ),
   caption = "Total recovered cases",
   icon = "fas fa-user-md",
   color = recovered_color
@@ -110,7 +118,7 @@ valueBox(
 
 valueBox(
   value = paste(format(sum(df$death, na.rm = TRUE), big.mark = ","), " (",
-                round(100 * sum(df$death, na.rm = TRUE) / sum(df$confirmed), 1),
+                round(100 * sum(df$death, na.rm = TRUE) / sum(df$confirmed), 2),
                 "%)",
                 sep = ""
   ),
@@ -249,20 +257,20 @@ daily_confirmed %>%
     mode = "lines+markers",
     name = "SriLanka"
   ) %>%
-  # plotly::add_trace(
-   #  x = ~date,
-   #  y = ~China,
-   #  type = "scatter",
-   #  mode = "lines+markers",
-   #  name = "China"
-  # ) %>%
   plotly::add_trace(
     x = ~date,
-    y = ~`Taiwan*`,
+    y = ~China,
     type = "scatter",
     mode = "lines+markers",
-    name = "Taiwan*"
+    name = "China"
   ) %>%
+  # plotly::add_trace(
+  #   x = ~date,
+  #   y = ~`Taiwan*`,
+  #   type = "scatter",
+  #   mode = "lines+markers",
+  #   name = "Taiwan*"
+  # ) %>%
   plotly::add_trace(
     x = ~date,
     y = ~Singapore,
@@ -417,8 +425,6 @@ About
   
   The code behind this dashboard is available on [GitHub](https://github.com/AntoineSoetewey/coronavirus_dashboard){target="_blank"} by Antoine Soetewey. I have made some changes to this code when I ran into some errors. It can be found on [GitHub](https://github.com/dilruu89/COVID_19_analysis){target="_blank"}.
 
- 
-  
 
 **Data**
   
