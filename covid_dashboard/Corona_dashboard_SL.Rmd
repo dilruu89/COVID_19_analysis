@@ -11,25 +11,28 @@ vertical_layout: fill
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+
+#install.packages("devtools")
+#devtools::install_github("RamiKrispin/coronavirus", force = TRUE)
 library(coronavirus)
-library(tidyverse)
+library(tidyr)
 data(coronavirus)
-update_datasets()
+#update_datasets()
 
 
 `%>%` <- magrittr::`%>%`
 
-confirmed_color <- "gray"
+confirmed_color <- "#663399"
 active_color <- "#1f77b4"
 recovered_color <- "forestgreen"
-death_color <- "red"
+death_color <- "#FF4500"
 
 df <- coronavirus %>%
   # dplyr::filter(date == max(date)) %>%
   dplyr::filter(Country.Region == "Sri Lanka") %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>% 
-  spread(type,total) %>% 
+  tidyr::spread(type,total) %>% 
   dplyr::mutate(unrecovered = confirmed - ifelse(is.na(death), 0, death)) %>%
   dplyr::arrange(-confirmed) %>%
   dplyr::ungroup() %>%
@@ -43,7 +46,7 @@ df_daily <- coronavirus %>%
   dplyr::filter(Country.Region == "Sri Lanka") %>%
   dplyr::group_by(date, type) %>%
   dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
-  spread(type,total) %>% 
+  tidyr::spread(type,total) %>% 
   dplyr::arrange(date) %>%
   dplyr::ungroup() %>%
   #dplyr::mutate(active = confirmed - death - recovered) %>%
@@ -57,11 +60,14 @@ df_daily <- coronavirus %>%
 df1 <- coronavirus %>% dplyr::filter(date == max(date))
 
 ```
-Summary
+
+
+Summary {data-orientation=rows}
 =======================================================================
   
-Row {data-width=400}
+  Row {data-width=400}
 -----------------------------------------------------------------------
+
   
 ### confirmed {.value-box}
   
@@ -70,11 +76,10 @@ Row {data-width=400}
 valueBox(
   value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "),
   caption = "Total confirmed cases",
-  icon = "fas fa-user-md",
+  icon = "far fa-check-circle",
   color = confirmed_color
 )
 ```
-
 
 
 
@@ -110,13 +115,30 @@ valueBox(
                 sep = ""
   ),
   caption = "Death cases (death rate)",
-  icon = "fas fa-heart-broken",
+  icon = "fas fa-sad-tear",
   color = death_color
 )
 ```
 
 
-Row
+
+<!-- ### active {.value-box} -->
+
+<!-- ```{r} -->
+
+<!-- valueBox( -->
+<!--   value = paste(format(sum(df$unrecovered, na.rm = TRUE), big.mark = ","), " (", -->
+<!--                 round(100 * sum(df$unrecovered, na.rm = TRUE) / sum(df$confirmed), 1), -->
+<!--                 "%)", -->
+<!--                 sep = "" -->
+<!--   ), -->
+<!--   caption = "ACtive cases", -->
+<!--   icon = "fas fa-heart-broken", -->
+<!--   color = death_color -->
+<!-- ) -->
+<!-- ``` -->
+
+ Row
 -----------------------------------------------------------------------
 
 ### **Daily cumulative cases by type** (Sri Lanka only)
@@ -213,7 +235,7 @@ daily_confirmed <- coronavirus %>%
   dplyr::summarise(total = sum(cases)) %>%
   dplyr::ungroup() %>%
   #tidyr::pivot_wider(names_from = country, values_from = total)
-  spread(country,total)
+  tidyr::spread(country,total)
 
 #----------------------------------------
 # Plotting the data
@@ -279,7 +301,7 @@ df_EU <- coronavirus %>%
                   Country.Region == "Taiwan*") %>%
   dplyr::group_by(Country.Region, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
-  spread(type,total) %>% 
+  tidyr::spread(type,total) %>% 
   # dplyr::mutate(unrecovered = confirmed - ifelse(is.na(recovered), 0, recovered) - ifelse(is.na(death), 0, death)) %>%
   dplyr::mutate(unrecovered = confirmed - ifelse(is.na(death), 0, death)) %>%
   dplyr::arrange(confirmed) %>%
@@ -384,10 +406,6 @@ map_object %>%
 
 
 
-
-
-
-
 About
 =======================================================================
   
@@ -397,7 +415,7 @@ About
 
 **Code**
   
-  The code behind this dashboard is available on [GitHub](https://github.com/AntoineSoetewey/coronavirus_dashboard){target="_blank"}  
+  The code behind this dashboard is available on [GitHub](https://github.com/AntoineSoetewey/coronavirus_dashboard){target="_blank"} by Antoine Soetewey. I have made some changes to this code when I ran into some errors. It can be found on [GitHub](https://github.com/dilruu89/COVID_19_analysis){target="_blank"}.
 
  
   
@@ -410,8 +428,11 @@ About
 install.packages("devtools")
 devtools::install_github("RamiKrispin/coronavirus")
 ```
-
-The data and dashboard are refreshed on a daily basis.
+This dashboard will not update by itself every day, we need to manually update it. After updating the data, we need to restart the R session to have the last available data. I have published this through through [RPubs](https://rpubs.com/){target="_blank"} (because it is free and easy to publish directly from RStudio).
 
 The raw data is pulled from the Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE) Coronavirus [repository](https://github.com/RamiKrispin/coronavirus-csv){target="_blank"}.
+
+
+
+
 
