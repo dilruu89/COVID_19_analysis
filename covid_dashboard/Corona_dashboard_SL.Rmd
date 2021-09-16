@@ -17,7 +17,7 @@ vertical_layout: fill
 devtools::install_github("RamiKrispin/coronavirus", force = TRUE)
 #update_datasets()
 
-
+#test
 library(flexdashboard)
 library(coronavirus)
 library(tidyr)
