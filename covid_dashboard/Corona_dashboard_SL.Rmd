@@ -13,8 +13,8 @@ vertical_layout: fill
 
 #update dashboard with the latest data, have to manually update the data by reinstalling the coronavirus
 #R asks you whether you would like to update other packages, type 3 for “None”.
-##install.packages("devtools")
-#devtools::install_github("RamiKrispin/coronavirus", force = TRUE)
+#install.packages("devtools")
+devtools::install_github("RamiKrispin/coronavirus", force = TRUE)
 #update_datasets()
 
 
@@ -32,21 +32,21 @@ death_color <- "#FF4500"
 
 df <- coronavirus %>%
   # dplyr::filter(date == max(date)) %>%
-  dplyr::filter(Country.Region == "Sri Lanka") %>%
-  dplyr::group_by(Country.Region, type) %>%
+  dplyr::filter(country== "Sri Lanka") %>%
+  dplyr::group_by(country, type) %>%
   dplyr::summarise(total = sum(cases)) %>% 
   tidyr::spread(type,total) %>% 
   dplyr::mutate(unrecovered = confirmed - ifelse(is.na(death), 0, death)) %>%
   dplyr::arrange(-confirmed) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(country = dplyr::if_else(Country.Region == "United Arab Emirates", "UAE", Country.Region)) %>%
+  dplyr::mutate(country = dplyr::if_else(country == "United Arab Emirates", "UAE", country)) %>%
   dplyr::mutate(country = dplyr::if_else(country == "Mainland China", "China", country)) %>%
   dplyr::mutate(country = dplyr::if_else(country == "North Macedonia", "N.Macedonia", country)) %>%
   dplyr::mutate(country = trimws(country)) %>%
   dplyr::mutate(country = factor(country, levels = country))
 
 df_daily <- coronavirus %>%
-  dplyr::filter(Country.Region == "Sri Lanka") %>%
+  dplyr::filter(country== "Sri Lanka") %>%
   dplyr::group_by(date, type) %>%
   dplyr::summarise(total = sum(cases, na.rm = TRUE)) %>%
   tidyr::spread(type,total) %>% 
@@ -238,7 +238,7 @@ Column {data-width=400}
 daily_confirmed <- coronavirus %>%
   dplyr::filter(type == "confirmed") %>%
   dplyr::filter(date >= "2020-02-29") %>%
-  dplyr::mutate(country = Country.Region) %>%
+  dplyr::mutate(country = country) %>%
   dplyr::group_by(date, country) %>%
   dplyr::summarise(total = sum(cases)) %>%
   dplyr::ungroup() %>%
@@ -259,10 +259,10 @@ daily_confirmed %>%
   ) %>%
   plotly::add_trace(
     x = ~date,
-    y = ~China,
+    y = ~India,
     type = "scatter",
     mode = "lines+markers",
-    name = "China"
+    name = "India"
   ) %>%
   # plotly::add_trace(
   #   x = ~date,
@@ -303,18 +303,18 @@ daily_confirmed %>%
 ```{r daily_summary}
 df_EU <- coronavirus %>%
   # dplyr::filter(date == max(date)) %>%
-  dplyr::filter(Country.Region == "Sri Lanka" |
-                  Country.Region == "Singapore" |
-                  Country.Region == "India" |
-                  Country.Region == "Taiwan*") %>%
-  dplyr::group_by(Country.Region, type) %>%
+  dplyr::filter(country == "Sri Lanka" |
+                  country == "Singapore" |
+                  country == "India" |
+                  country == "Taiwan*") %>%
+  dplyr::group_by(country, type) %>%
   dplyr::summarise(total = sum(cases)) %>%
   tidyr::spread(type,total) %>% 
   # dplyr::mutate(unrecovered = confirmed - ifelse(is.na(recovered), 0, recovered) - ifelse(is.na(death), 0, death)) %>%
   dplyr::mutate(unrecovered = confirmed - ifelse(is.na(death), 0, death)) %>%
   dplyr::arrange(confirmed) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(country = dplyr::if_else(Country.Region == "United Arab Emirates", "UAE", Country.Region)) %>%
+  dplyr::mutate(country = dplyr::if_else(country == "United Arab Emirates", "UAE", country)) %>%
   dplyr::mutate(country = dplyr::if_else(country == "Mainland China", "China", country)) %>%
   dplyr::mutate(country = dplyr::if_else(country == "North Macedonia", "N.Macedonia", country)) %>%
   dplyr::mutate(country = trimws(country)) %>%
@@ -368,7 +368,7 @@ library(purrr)
 cv_data_for_plot <- coronavirus %>%
   # dplyr::filter(Country.Region == "Belgium") %>%
   dplyr::filter(cases > 0) %>%
-  dplyr::group_by(Country.Region, Province.State, Lat, Long, type) %>%
+  dplyr::group_by(country, lat, long, type) %>%
   dplyr::summarise(cases = sum(cases)) %>%
   dplyr::mutate(log_cases = 2 * log(cases)) %>%
   dplyr::ungroup()
@@ -385,7 +385,7 @@ names(cv_data_for_plot.split) %>%
     map_object <<- map_object %>%
       addCircleMarkers(
         data = cv_data_for_plot.split[[df]],
-        lng = ~Long, lat = ~Lat,
+        lng = ~long, lat = ~lat,
         #                 label=~as.character(cases),
         color = ~ pal(type),
         stroke = FALSE,
@@ -394,7 +394,7 @@ names(cv_data_for_plot.split) %>%
         popup = leafpop::popupTable(cv_data_for_plot.split[[df]],
                                     feature.id = FALSE,
                                     row.numbers = FALSE,
-                                    zcol = c("type", "cases", "Country.Region", "Province.State")
+                                    zcol = c("type", "cases", "country")
         ),
         group = df,
         #                 clusterOptions = markerClusterOptions(removeOutsideVisibleBounds = F),
